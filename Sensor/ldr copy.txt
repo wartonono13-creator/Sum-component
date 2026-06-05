@@ -1,0 +1,19 @@
+// =========================
+// SENSOR LDR
+// =========================
+#define LDR_PIN A0
+
+const int batasGelap = 400;
+
+// Setup
+pinMode(LDR_PIN, INPUT);
+
+// Membaca sensor
+int nilaiLDR = analogRead(LDR_PIN);
+
+// Penggunaan data sensor
+if (nilaiLDR > batasGelap) {
+    digitalWrite(LED_LAMPU, HIGH);
+} else {
+    digitalWrite(LED_LAMPU, LOW);
+}

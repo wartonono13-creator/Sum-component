@@ -1,0 +1,26 @@
+// =========================
+// SENSOR DHT11
+// =========================
+#include <DHT.h>
+
+#define DHT_PIN 2
+#define DHTTYPE DHT11
+
+DHT dht(DHT_PIN, DHTTYPE);
+
+// Setup
+dht.begin();
+
+// Membaca sensor
+float kelembapan = dht.readHumidity();
+float suhu = dht.readTemperature();
+
+// Validasi pembacaan
+if (isnan(kelembapan) || isnan(suhu)) {
+    Serial.println("Gagal membaca dari sensor DHT!");
+
+    lcd.setCursor(0, 0);
+    lcd.print("Error Sensor DHT");
+
+    return;
+}

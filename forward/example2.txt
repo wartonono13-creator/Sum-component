@@ -1,0 +1,88 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+
+
+#define LDR_PIN A0          
+#define DHT_PIN 2           
+#define LED_LAMPU 3         
+
+
+#define DHTTYPE DHT11      
+DHT dht(DHT_PIN, DHTTYPE);
+
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
+
+
+const int batasGelap = 400; 
+
+void setup() {
+  
+  Serial.begin(9600);
+  
+  
+  dht.begin();
+  lcd.init();
+  lcd.backlight();
+  
+  
+  pinMode(LED_LAMPU, OUTPUT);
+  pinMode(LDR_PIN, INPUT);
+
+  
+  lcd.setCursor(0, 0);
+  lcd.print("  SMART FARMING ");
+  lcd.setCursor(0, 1);
+  lcd.print("   INITIALIZING ");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  
+  float kelembapan = dht.readHumidity();
+  float suhu = dht.readTemperature();
+  int nilaiLDR = analogRead(LDR_PIN); 
+
+  
+  if (isnan(kelembapan) || isnan(suhu)) {
+    Serial.println("Gagal membaca dari sensor DHT!");
+    lcd.setCursor(0, 0);
+    lcd.print("Error Sensor DHT");
+    return; 
+  }
+
+ 
+  if (nilaiLDR > batasGelap) {
+    digitalWrite(LED_LAMPU, HIGH); // Lampu Menyala
+  } else {
+    digitalWrite(LED_LAMPU, LOW);  // Lampu Mati
+  }
+
+  
+  Serial.print("Suhu: "); Serial.print(suhu); Serial.print("C | ");
+  Serial.print("Lembab: "); Serial.print(kelembapan); Serial.print("% | ");
+  Serial.print("LDR: "); Serial.println(nilaiLDR);
+
+  
+  lcd.setCursor(0, 0);
+  lcd.print("T:");
+  lcd.print((int)suhu); 
+  lcd.print("C ");
+  
+  lcd.print("H:");
+  lcd.print((int)kelembapan);
+  lcd.print("%   "); 
+
+  
+  lcd.setCursor(0, 1);
+  if (nilaiLDR > batasGelap) {
+    lcd.print("Lampu: ON (Gelap)");
+  } else {
+    lcd.print("Lampu: OFF(Terg)");
+  }
+
+ 
+  delay(1500);
+}

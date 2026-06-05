@@ -1,0 +1,21 @@
+// =========================
+// SENSOR LDR
+// =========================
+#define pin_ldr A0
+
+const int batascahaya = 400;
+
+// Membaca sensor
+int ldr = analogRead(pin_ldr);
+
+// Penggunaan data sensor
+if(ldr < batascahaya){
+    Serial.println("Cerah");
+    servo.write(90);
+    Blynk.virtualWrite(V2, "Cerah");
+}else{
+    Serial.println("Mendung/Malam");
+    servo.write(0);
+    Blynk.virtualWrite(V4, 1);
+    Blynk.virtualWrite(V2, "Mendung/Malam");
+}

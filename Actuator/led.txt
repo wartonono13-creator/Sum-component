@@ -1,0 +1,13 @@
+// =========================
+// LED LAMPU
+// =========================
+#define LED_LAMPU 3
+
+// Setup
+pinMode(LED_LAMPU, OUTPUT);
+
+// Menyalakan lampu
+digitalWrite(LED_LAMPU, HIGH);
+
+// Mematikan lampu
+digitalWrite(LED_LAMPU, LOW);

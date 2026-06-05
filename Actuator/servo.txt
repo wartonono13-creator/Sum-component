@@ -1,0 +1,23 @@
+// =========================
+// SERVO
+// =========================
+#include <Servo.h>
+
+#define pin_servo 4
+
+Servo servo;
+
+// Setup
+servo.attach(pin_servo);
+servo.write(0);
+
+// Penggunaan
+
+// Hujan
+servo.write(0);
+
+// Cerah
+servo.write(90);
+
+// Mendung/Malam
+servo.write(0);

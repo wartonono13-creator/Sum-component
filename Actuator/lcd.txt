@@ -1,0 +1,45 @@
+// =========================
+// LCD I2C
+// =========================
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// Setup
+lcd.init();
+lcd.backlight();
+
+// Tampilan awal
+lcd.setCursor(0, 0);
+lcd.print("  SMART FARMING ");
+
+lcd.setCursor(0, 1);
+lcd.print("   INITIALIZING ");
+
+delay(2000);
+lcd.clear();
+
+// Menampilkan error
+lcd.setCursor(0, 0);
+lcd.print("Error Sensor DHT");
+
+// Menampilkan suhu dan kelembapan
+lcd.setCursor(0, 0);
+
+lcd.print("T:");
+lcd.print((int)suhu);
+lcd.print("C ");
+
+lcd.print("H:");
+lcd.print((int)kelembapan);
+lcd.print("%   ");
+
+// Menampilkan status lampu
+lcd.setCursor(0, 1);
+
+if (nilaiLDR > batasGelap) {
+    lcd.print("Lampu: ON (Gelap)");
+} else {
+    lcd.print("Lampu: OFF(Terg)");
+}

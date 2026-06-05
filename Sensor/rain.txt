@@ -1,0 +1,19 @@
+// =========================
+// SENSOR HUJAN
+// =========================
+#define pin_rain 5
+
+// Setup
+pinMode(pin_rain, INPUT_PULLUP);
+
+// Membaca sensor
+int hujan = digitalRead(pin_rain);
+
+// Penggunaan data sensor
+if(hujan == LOW){
+    Blynk.virtualWrite(V4, 1);
+    Serial.println("Hujan");
+    servo.write(0);
+    tone(pin_buzz, 1000);
+    Blynk.virtualWrite(V2, "Hujan");
+}

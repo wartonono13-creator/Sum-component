@@ -1,0 +1,13 @@
+// =========================
+// BUZZER
+// =========================
+#define pin_buzz 3
+
+// Setup
+pinMode(pin_buzz, OUTPUT);
+
+// Menyalakan buzzer
+tone(pin_buzz, 1000);
+
+// Mematikan buzzer
+noTone(pin_buzz);

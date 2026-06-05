@@ -1,0 +1,115 @@
+#define BLYNK_TEMPLATE_ID    "TMPL6uSpswbda"
+#define BLYNK_TEMPLATE_NAME "UAP"
+#define BLYNK_AUTH_TOKEN    "Ph3qJ_HCvyQcYvdpYffvg7VJaSoVQtyG"
+
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+#include <Servo.h>
+
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "iPhone";     
+char pass[] = "oooooooo"; 
+
+const int pinHujan  = D5;
+const int pinLDR    = A0;
+const int pinServo  = D4;
+const int pinBuzzer = D1;
+
+Servo myservo;
+BlynkTimer timer;
+
+const int batasTerang  = 200; 
+const int batasMendung = 350; 
+
+bool statusBuzzer = false; 
+
+void kirimDataSensor() {
+  int statusHujan = digitalRead(pinHujan); // LOW = Hujan, HIGH = Tidak Hujan
+  int nilaiLDR = analogRead(pinLDR);
+
+  // --- TAMBAHAN BLYNK: MENGIRIM KONDISI HUJAN KE GAUGE V1 ---
+  // Karena pinHujan bertipe digital (LOW/HIGH) sedangkan widget V1 di dashboard memiliki range 0 - 4095:
+  // Jika LOW (Hujan) kita kirim angka kecil (misal 500), jika HIGH (Kering) kita kirim angka 4095.
+  if (statusHujan == LOW) {
+    Blynk.virtualWrite(V1, 500);  
+  } else {
+    Blynk.virtualWrite(V1, 4095); 
+  }
+
+  // =============================================
+  // KONDISI 1: HUJAN (Siang atau Malam) → Buzzer BUNYI
+  // =============================================
+  if (statusHujan == LOW) {
+    myservo.write(0); // Jemuran MASUK (0 derajat)
+
+    // Efek bip-bip setiap 1 detik
+    statusBuzzer = !statusBuzzer;
+    if (statusBuzzer) {
+      tone(pinBuzzer, 1000); // BUNYI 1000 Hz
+    } else {
+      noTone(pinBuzzer);     // DIAM (efek bip)
+    }
+
+    // Hujan Siang: LDR Terang
+    if (nilaiLDR < batasTerang) {
+      Blynk.virtualWrite(V2, "Hujan Siang (Jemuran Masuk)"); // Disesuaikan ke V2 (Status Jemuran)
+    }
+    // Hujan Malam: LDR Gelap
+    else {
+      Blynk.virtualWrite(V2, "Hujan Malam (Jemuran Masuk)"); // Disesuaikan ke V2 (Status Jemuran)
+    }
+  }
+
+  // =============================================
+  // KONDISI 2: TIDAK HUJAN → Buzzer MATI
+  // =============================================
+  else {
+    noTone(pinBuzzer); // Buzzer selalu MATI jika tidak hujan
+    statusBuzzer = false;
+
+    // A. Cerah (Terang) → Jemuran KELUAR
+    if (nilaiLDR < batasTerang) {
+      myservo.write(90); // Jemuran KELUAR (90 derajat sesuai permintaan)
+      Blynk.virtualWrite(V2, "Cerah (Jemuran Keluar)"); // Disesuaikan ke V2 (Status Jemuran)
+    }
+    // B. Mendung (Agak Gelap) → Jemuran TETAP KELUAR
+    else if (nilaiLDR >= batasTerang && nilaiLDR <= batasMendung) {
+      myservo.write(90); // Jemuran TETAP KELUAR (90 derajat sesuai permintaan)
+      Blynk.virtualWrite(V2, "Mendung (Jemuran Keluar)"); // Disesuaikan ke V2 (Status Jemuran)
+    }
+    // C. Malam Tidak Hujan (Gelap) → Jemuran MASUK
+    else {
+      myservo.write(0); // Jemuran MASUK (0 derajat)
+      Blynk.virtualWrite(V2, "Malam (Jemuran Masuk)"); // Disesuaikan ke V2 (Status Jemuran)
+    }
+  }
+
+  // --- TAMBAHAN BLYNK: MENGIRIM DATA LDR KE GAUGE V0 ---
+  Blynk.virtualWrite(V0, nilaiLDR); 
+
+  // Debug Serial Monitor
+  Serial.print("Hujan: "); Serial.print(statusHujan);
+  Serial.print(" | LDR: "); Serial.print(nilaiLDR);
+  Serial.print(" | Buzzer: "); Serial.println(statusBuzzer);
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // Menggunakan INPUT_PULLUP agar pin D5 stabil menerima logika HIGH saat kering
+  pinMode(pinHujan, INPUT_PULLUP);
+  
+  pinMode(pinBuzzer, OUTPUT);
+  noTone(pinBuzzer); // Buzzer MATI di awal
+
+  myservo.attach(pinServo);
+  myservo.write(0); // Posisi awal jemuran MASUK
+
+  Blynk.begin(auth, ssid, pass);
+  timer.setInterval(1000L, kirimDataSensor);
+}
+
+void loop() {
+  Blynk.run();
+  timer.run();
+}

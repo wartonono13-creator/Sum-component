@@ -1,0 +1,65 @@
+#define BLYNK_TEMPLATE_ID "TMPL6SJoaaMYQ"
+#define BLYNK_TEMPLATE_NAME "ESP8266 WiFi"
+#define BLYNK_AUTH_TOKEN "ekQk1jvYWQU1D5POl3hYZpF7XayftrHV"
+
+#include <Servo.h>
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+
+#define pin_ldr A0
+#define pin_buzz 3
+#define pin_rain 5
+#define pin_servo 4
+
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "Wokwi-GUEST";
+char pass[] = "";
+
+Servo servo;
+BlynkTimer timer;
+
+const int batascahaya = 400;
+
+void baca(){
+  int ldr = analogRead(pin_ldr);
+  int hujan = digitalRead(pin_rain);
+
+  //hujan
+  if(hujan == LOW){
+    Blynk.virtualWrite(V4, 1);
+    Serial.println("Hujan");
+    servo.write(0);
+    tone(pin_buzz, 1000);
+    Blynk.virtualWrite(V2, "Hujan");
+  }else{
+    noTone(pin_buzz);
+    Blynk.virtualWrite(V4, 0);
+        if(ldr < batascahaya){
+          Serial.println("Cerah");
+          servo.write(90);
+          Blynk.virtualWrite(V2, "Cerah");     
+    }else{
+      Serial.println("Mendung/Malam");
+      servo.write(0);
+      Blynk.virtualWrite(V4, 1);
+      Blynk.virtualWrite(V2, "Mendung/Malam");
+    }
+  }
+}
+
+void setup(){
+  Serial.begin(9600);
+  pinMode(pin_buzz, OUTPUT);
+  pinMode(pin_rain, INPUT_PULLUP);
+
+  servo.attach(pin_servo);
+  servo.write(0);
+
+  Blynk.begin(auth, ssid, pass);
+  timer.setInterval(1000L, baca);
+}
+
+void loop(){
+  Blynk.run();
+  timer.run();
+}
